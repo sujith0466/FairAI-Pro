@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairAI Pro - AI Fairness & Bias Detection Platform</title>
+    <meta name="description" content="FairAI Pro is an AI Fairness & Bias Detection Platform. Upload your dataset, analyze fairness metrics, and improve model equity.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ═══════════════════ BACKGROUND EFFECTS ═══════════════════ -->
+    <div class="bg-effects">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" stroke="url(#logo-grad)" stroke-width="2.5"/>
+                        <path d="M10 16.5L14 20.5L22 12.5" stroke="url(#logo-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="16" cy="16" r="4" fill="url(#logo-grad)" opacity="0.3"/>
+                        <defs>
+                            <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
+                                <stop stop-color="#6C5CE7"/>
+                                <stop offset="1" stop-color="#00D2FF"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">FairAI <span class="logo-accent">Pro</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="#hero" class="nav-link active">Home</a>
+                <a href="#upload-section" class="nav-link">Analyze</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+            </div>
+            <div class="nav-badge">
+                <span class="badge-dot"></span>
+                AI Fairness & Bias Detection Platform
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════ HERO ═══════════════════ -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                AI Fairness & Bias Detection Platform
+            </div>
+            <h1 class="hero-title">
+                Detect <span class="gradient-text">Bias</span> in Your<br>
+                ML Models <span class="gradient-text-2">Instantly</span>
+            </h1>
+            <p class="hero-subtitle">
+                Upload your dataset, train a model, and get comprehensive fairness metrics 
+                — all in seconds. Ensure your AI treats every group equitably.
+            </p>
+            <div class="hero-actions">
+                <a href="#upload-section" class="btn btn-primary" id="btn-get-started">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Start Analysis
+                </a>
+                <a href="#how-it-works" class="btn btn-ghost">
+                    Learn How It Works
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-value">3</span>
+                    <span class="hero-stat-label">Fairness Metrics</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">&lt;10s</span>
+                    <span class="hero-stat-label">Analysis Time</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">0–100</span>
+                    <span class="hero-stat-label">Fairness Score</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-card">
+                <div class="hero-card-header">
+                    <div class="hero-card-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="hero-card-title">fairness_report.json</span>
+                </div>
+                <pre class="hero-card-code"><code>{
+  <span class="json-key">"fairness_score"</span>: <span class="json-val-green">87.5</span>,
+  <span class="json-key">"bias_level"</span>: <span class="json-str">"Fair"</span>,
+  <span class="json-key">"statistical_parity"</span>: <span class="json-val">-0.04</span>,
+  <span class="json-key">"disparate_impact"</span>: <span class="json-val">0.95</span>,
+  <span class="json-key">"selection_rate"</span>: {
+    <span class="json-key">"privileged"</span>: <span class="json-val">0.72</span>,
+    <span class="json-key">"unprivileged"</span>: <span class="json-val">0.68</span>
+  }
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+    <section class="section" id="how-it-works">
+        <div class="section-inner">
+            <div class="section-header">
+                <span class="section-badge">Pipeline</span>
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">A 6-step automated pipeline from raw data to actionable fairness insights</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <div class="step-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <h3>Upload Dataset</h3>
+                    <p>Upload a CSV with features, a target column, and a sensitive attribute like gender or race.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <div class="step-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </div>
+                    <h3>Configure</h3>
+                    <p>Select the target column, sensitive attribute, and define the privileged group for analysis.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <div class="step-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <h3>Train Model</h3>
+                    <p>A Logistic Regression classifier is automatically trained on your dataset with 80/20 split.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">04</div>
+                    <div class="step-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3>Disaggregate</h3>
+                    <p>Predictions are split by demographic group to compare outcomes across privileged and unprivileged groups.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">05</div>
+                    <div class="step-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    </div>
+                    <h3>Compute Metrics</h3>
+                    <p>Calculate Selection Rate, Statistical Parity Difference, and Disparate Impact Ratio per group.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">06</div>
+                    <div class="step-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <h3>Fairness Score</h3>
+                    <p>A composite 0–100 fairness score combining SPD and DIR into a single actionable metric.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ UPLOAD & ANALYSIS ═══════════════════ -->
+    <section class="section" id="upload-section">
+        <div class="section-inner">
+            <div class="section-header">
+                <span class="section-badge">Analyze</span>
+                <h2 class="section-title">AI Fairness & Bias Detection Platform</h2>
+                <p class="section-subtitle">Upload your dataset and configure the analysis parameters</p>
+            </div>
+
+            <!-- Upload Area -->
+            <div class="analysis-container">
+                <div class="upload-panel" id="upload-panel">
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <h3 class="upload-title">Drop your CSV here</h3>
+                        <p class="upload-desc">or click to browse files</p>
+                        <input type="file" id="file-input" accept=".csv" hidden>
+                        <div class="upload-formats">Supports: .csv files</div>
+                    </div>
+                    <div class="upload-divider">
+                        <span>OR</span>
+                    </div>
+                    <button class="btn btn-secondary btn-full" id="btn-sample">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        Use Built-in Dataset
+                    </button>
+                </div>
+
+                <!-- Config Panel (hidden initially) -->
+                <div class="config-panel hidden" id="config-panel">
+                    <div class="config-header">
+                        <div class="config-file-info">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <div>
+                                <span class="config-filename" id="config-filename">dataset.csv</span>
+                                <span class="config-rows" id="config-rows">0 rows</span>
+                            </div>
+                        </div>
+                        <button class="btn-icon" id="btn-change-file" title="Change file">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="1 4 1 10 7 10"/>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Data Preview -->
+                    <div class="data-preview-container">
+                        <h4 class="config-section-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                            Data Preview
+                        </h4>
+                        <div class="table-wrapper" id="data-preview"></div>
+                    </div>
+
+                    <!-- Configuration Form -->
+                    <div class="config-form">
+                        <h4 class="config-section-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09"/></svg>
+                            Analysis Configuration
+                        </h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="target-col">Target Column (Binary 0/1)</label>
+                                <select id="target-col" class="form-select">
+                                    <option value="">Select target column...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sensitive-col">Sensitive Attribute</label>
+                                <select id="sensitive-col" class="form-select">
+                                    <option value="">Select sensitive column...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="privileged-val">Privileged Group Value</label>
+                                <select id="privileged-val" class="form-select">
+                                    <option value="">Select privileged value...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-full btn-analyze" id="btn-analyze">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            Run Bias Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-overlay hidden" id="loading-overlay">
+                <div class="loading-content">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring spinner-ring-2"></div>
+                    </div>
+                    <h3>Analyzing Bias...</h3>
+                    <p>Training model & computing fairness metrics</p>
+                    <div class="loading-steps">
+                        <div class="loading-step active" id="ls-1">
+                            <span class="ls-dot"></span> Preparing dataset
+                        </div>
+                        <div class="loading-step" id="ls-2">
+                            <span class="ls-dot"></span> Training Logistic Regression
+                        </div>
+                        <div class="loading-step" id="ls-3">
+                            <span class="ls-dot"></span> Computing fairness metrics
+                        </div>
+                        <div class="loading-step" id="ls-4">
+                            <span class="ls-dot"></span> Generating report
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════ RESULTS DASHBOARD ═══════════════════ -->
+            <div class="results-dashboard hidden" id="results-dashboard">
+                
+                <!-- Fairness Score Hero -->
+                <div class="score-hero" id="score-hero">
+                    <div class="score-ring-container">
+                        <svg class="score-ring" viewBox="0 0 200 200">
+                            <circle class="score-ring-bg" cx="100" cy="100" r="85" />
+                            <circle class="score-ring-fill" cx="100" cy="100" r="85" id="score-ring-fill" />
+                        </svg>
+                        <div class="score-value-wrap">
+                            <span class="score-value" id="score-value">0</span>
+                            <span class="score-label-small">/100</span>
+                        </div>
+                    </div>
+                    <div class="score-info">
+                        <div class="score-badge" id="score-badge">Fair</div>
+                        <h3 class="score-headline" id="score-headline">Fairness Assessment</h3>
+                        <p class="score-direction" id="score-direction">No significant directional bias detected</p>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card" id="mc-spd">
+                        <div class="metric-header">
+                            <span class="metric-label">Statistical Parity Difference</span>
+                            <span class="metric-tag" id="spd-tag">Fair Range: ±0.10</span>
+                        </div>
+                        <div class="metric-value" id="metric-spd">0.00</div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar">
+                                <div class="metric-bar-fair"></div>
+                                <div class="metric-bar-marker" id="spd-marker"></div>
+                            </div>
+                            <div class="metric-bar-labels">
+                                <span>-0.5</span><span>0</span><span>+0.5</span>
+                            </div>
+                        </div>
+                        <p class="metric-desc">Difference in selection rates between unprivileged and privileged groups. Closer to 0 = fairer.</p>
+                    </div>
+
+                    <div class="metric-card" id="mc-dir">
+                        <div class="metric-header">
+                            <span class="metric-label">Disparate Impact Ratio</span>
+                            <span class="metric-tag" id="dir-tag">Fair Range: 0.80–1.25</span>
+                        </div>
+                        <div class="metric-value" id="metric-dir">0.00</div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar">
+                                <div class="metric-bar-fair-dir"></div>
+                                <div class="metric-bar-marker" id="dir-marker"></div>
+                            </div>
+                            <div class="metric-bar-labels">
+                                <span>0</span><span>1.0</span><span>2.0</span>
+                            </div>
+                        </div>
+                        <p class="metric-desc">Ratio of selection rates. The 80% rule requires this to be ≥ 0.80 to avoid adverse impact.</p>
+                    </div>
+                </div>
+
+                <!-- Selection Rate Comparison -->
+                <div class="comparison-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        Selection Rate Comparison
+                    </h3>
+                    <div class="comparison-bars" id="comparison-bars">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Model Performance & Group Details -->
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <h3 class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Model Performance
+                        </h3>
+                        <div class="perf-grid" id="perf-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h3 class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            Group Breakdown
+                        </h3>
+                        <div class="group-table-wrap" id="group-table-wrap">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Importance -->
+                <div class="feature-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                        Feature Importance
+                    </h3>
+                    <p class="card-subtitle">Logistic Regression coefficient magnitudes — higher = more influence on predictions</p>
+                    <div class="feature-bars" id="feature-bars">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Mitigation Fairness Scores -->
+                <div class="mitigation-scores-card" id="mitigation-scores-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"/></svg>
+                        Mitigation Fairness Scores
+                    </h3>
+                    <div class="mitigation-score-grid">
+                        <div class="mitigation-score-item">
+                            <div class="mitigation-score-label">Before Mitigation</div>
+                            <div class="mitigation-score-value" id="mitigation-before">0.00%</div>
+                        </div>
+                        <div class="mitigation-score-item">
+                            <div class="mitigation-score-label">After Mitigation</div>
+                            <div class="mitigation-score-value" id="mitigation-after">0.00%</div>
+                        </div>
+                        <div class="mitigation-score-item">
+                            <div class="mitigation-score-label">Improvement</div>
+                            <div class="mitigation-score-value" id="mitigation-improvement">+0.00%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mitigation Recommendations -->
+                <div class="recommendations-card" id="recommendations-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        Mitigation Recommendations
+                    </h3>
+                    <p class="card-subtitle">Actionable steps to improve fairness based on the detected bias patterns</p>
+                    <div class="recommendations-list" id="recommendations-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="results-footer">
+                    <button class="btn btn-primary" id="btn-export-report">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export Report (JSON)
+                    </button>
+                    <button class="btn btn-ghost" id="btn-new-analysis">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="1 4 1 10 7 10"/>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                        </svg>
+                        New Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ FOOTER ═══════════════════ -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <span class="logo-text">FairAI <span class="logo-accent">Pro</span></span>
+                <p>Built for equitable AI</p>
+            </div>
+            <div class="footer-meta">
+                <span>FairAI Pro – AI Fairness & Bias Detection Platform</span>
+                <span class="footer-dot">·</span>
+                <span>Statistical Parity Analysis</span>
+                <span class="footer-dot">·</span>
+                <span>Logistic Regression</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
+
+
+
