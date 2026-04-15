@@ -105,7 +105,7 @@ def analyze_bias(df, target_col, sensitive_col, privileged_value):
     )
 
     # Train Logistic Regression
-    model = LogisticRegression(max_iter=1000, random_state=42)
+    model = LogisticRegression(max_iter=100, solver="liblinear", random_state=42)
     model.fit(X_train, y_train)
 
     # ── Step 3: Generate Predictions ─────────────────────────────
@@ -324,7 +324,7 @@ def analyze_mitigation(df, target_col, sensitive_col):
         columns=X_train_full_enc.columns, fill_value=0
     )
 
-    model_full = LogisticRegression(max_iter=1000, random_state=42)
+    model_full = LogisticRegression(max_iter=100, solver="liblinear", random_state=42)
     model_full.fit(X_train_full_enc, y_train)
     y_pred_full = model_full.predict(X_test_full_enc)
     selection_rate_difference_before = _selection_rate_difference(
@@ -341,7 +341,7 @@ def analyze_mitigation(df, target_col, sensitive_col):
         columns=X_train_mitigated_enc.columns, fill_value=0
     )
 
-    model_mitigated = LogisticRegression(max_iter=1000, random_state=42)
+    model_mitigated = LogisticRegression(max_iter=100, solver="liblinear", random_state=42)
     model_mitigated.fit(X_train_mitigated_enc, y_train)
     y_pred_mitigated = model_mitigated.predict(X_test_mitigated_enc)
     selection_rate_difference_after = _selection_rate_difference(

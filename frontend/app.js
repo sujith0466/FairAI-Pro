@@ -2,9 +2,15 @@
    FairAI Pro — Frontend Application Logic
    ═══════════════════════════════════════════════════════════ */
 
-const IS_LOCAL_DEV = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE = IS_LOCAL_DEV ? "http://localhost:5000/api" : "https://fairai-pro.onrender.com/api";
-const API_TIMEOUT_MS = 25000;
+const BACKEND_BASE_URL =
+(window.location.hostname === "localhost" ||
+window.location.hostname === "127.0.0.1" ||
+window.location.hostname === "")
+? "http://localhost:5000"
+: "https://fairai-pro.onrender.com";
+
+const API_BASE = BACKEND_BASE_URL + "/api";
+const API_TIMEOUT_MS = 60000;
 const DEFAULT_LOADING_MESSAGE = 'Processing fairness analysis... This may take a few seconds';
 const ANALYZE_LOADING_MESSAGE = 'Analyzing dataset...';
 const MITIGATION_LOADING_MESSAGE = 'Running mitigation...';
@@ -887,4 +893,3 @@ function showToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 4000);
 }
-

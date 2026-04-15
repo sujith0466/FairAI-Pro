@@ -252,11 +252,20 @@ def analyze():
         return _json_error("No dataset uploaded. Please upload a CSV first.", 400)
 
     try:
+        import time
+        start = time.time()
+        
         df = pd.read_csv(filepath)
         df = preprocess_dataframe(df)
         df, normalized_target, normalized_sensitive = _normalize_and_validate_df(df, target_col, sensitive_col)
+        
+        if len(df) > 3000:
+            df = df.sample(n=3000, random_state=42)
+            
         results = analyze_bias(df, normalized_target, normalized_sensitive, privileged_value)
         results = {k: to_serializable(v) for k, v in results.items()}
+        
+        print("PROCESS TIME:", time.time() - start)
         return jsonify(results)
     except ValueError as e:
         return _json_error(str(e), 400)
