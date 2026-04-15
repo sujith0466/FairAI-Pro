@@ -9,6 +9,7 @@ import traceback
 import urllib.request
 import urllib.error
 from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 from dotenv import load_dotenv
 from bias_engine import analyze_bias, analyze_mitigation, get_dataset_info
 import pandas as pd
@@ -37,6 +38,11 @@ COLUMN_MAPPING = {
 REQUIRED_COLS = ["age", "gender", "education", "experience_years", "income", "hired"]
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
+CORS(app, origins=[
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://fair-ai-pro.vercel.app"
+])
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
 
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(BASE_DIR, 'uploads'))
@@ -63,14 +69,6 @@ def to_serializable(obj):
     if pd.isna(obj):
         return None
     return obj
-
-
-@app.after_request
-def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    return response
 
 
 def _is_allowed_file(filename):
