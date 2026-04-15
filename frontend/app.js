@@ -8,6 +8,11 @@ const BACKEND_BASE_URL =
     : "https://fairai-pro.onrender.com";
 const API_BASE = `${BACKEND_BASE_URL}/api`;
 const API_TIMEOUT_MS = 25000;
+const DEFAULT_LOADING_MESSAGE = 'Processing fairness analysis... This may take a few seconds';
+const ANALYZE_LOADING_MESSAGE = 'Analyzing dataset...';
+const MITIGATION_LOADING_MESSAGE = 'Running mitigation...';
+const EXPLAIN_LOADING_MESSAGE = 'Generating explanation...';
+const EXPORT_LOADING_MESSAGE = 'Exporting report...';
 
 // ── State ─────────────────────────────────────────────────
 let datasetInfo = null;
@@ -26,6 +31,8 @@ const btnSample = $('#btn-sample');
 const btnAnalyze = $('#btn-analyze');
 const btnChangeFile = $('#btn-change-file');
 const btnNewAnalysis = $('#btn-new-analysis');
+const btnExportReport = $('#btn-export-report');
+const btnExplain = $('#btn-explain');
 const targetColSel = $('#target-col');
 const sensitiveColSel = $('#sensitive-col');
 const privilegedValSel = $('#privileged-val');
@@ -95,8 +102,8 @@ function initButtons() {
     btnNewAnalysis.addEventListener('click', resetToUpload);
 
     // Export report
-    const btnExport = $('#btn-export-report');
-    if (btnExport) btnExport.addEventListener('click', exportReport);
+    if (btnExportReport) btnExportReport.addEventListener('click', exportReport);
+    if (btnExplain) btnExplain.addEventListener('click', runExplain);
 
     // Update privileged values when sensitive column changes
     sensitiveColSel.addEventListener('change', () => {
@@ -113,6 +120,10 @@ function setApiLoading(isLoading) {
     if (btnAnalyze) btnAnalyze.disabled = isBusy;
     if (btnSample) btnSample.disabled = isBusy;
     if (fileInput) fileInput.disabled = isBusy;
+    if (btnExportReport) btnExportReport.disabled = isBusy;
+    if (btnExplain) btnExplain.disabled = isBusy;
+    if (btnChangeFile) btnChangeFile.disabled = isBusy;
+    if (btnNewAnalysis) btnNewAnalysis.disabled = isBusy;
 }
 
 async function parseJsonSafe(response) {
@@ -123,13 +134,13 @@ async function parseJsonSafe(response) {
     }
 }
 
-async function apiRequest(path, options = {}, showInlineLoading = false) {
+async function apiRequest(path, options = {}, showInlineLoading = false, loadingMessage = DEFAULT_LOADING_MESSAGE, manageBusyState = true) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
     const mergedOptions = { ...options, signal: controller.signal };
 
-    setApiLoading(true);
-    if (showInlineLoading) showLoading();
+    if (manageBusyState) setApiLoading(true);
+    if (showInlineLoading) showLoading(loadingMessage);
 
     try {
         const response = await fetch(`${API_BASE}${path}`, mergedOptions);
@@ -150,7 +161,7 @@ async function apiRequest(path, options = {}, showInlineLoading = false) {
         throw err;
     } finally {
         clearTimeout(timeoutId);
-        setApiLoading(false);
+        if (manageBusyState) setApiLoading(false);
         if (showInlineLoading) hideLoading();
     }
 }
@@ -199,6 +210,8 @@ async function runAnalysis() {
         return;
     }
 
+    showLoading(ANALYZE_LOADING_MESSAGE);
+    setApiLoading(true);
     try {
         const data = await apiRequest('/analyze', {
             method: 'POST',
@@ -208,10 +221,11 @@ async function runAnalysis() {
                 sensitive_column: sensitiveCol,
                 privileged_value: privilegedVal
             })
-        }, true);
+        }, false, DEFAULT_LOADING_MESSAGE, false);
 
         let mitigation = null;
         try {
+            showLoading(MITIGATION_LOADING_MESSAGE);
             mitigation = await apiRequest('/mitigation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -219,7 +233,7 @@ async function runAnalysis() {
                     target_column: targetCol,
                     sensitive_column: sensitiveCol
                 })
-            });
+            }, false, DEFAULT_LOADING_MESSAGE, false);
         } catch (e) {
             // Keep main analysis usable even if mitigation call fails.
         }
@@ -230,6 +244,9 @@ async function runAnalysis() {
         showToast('Analysis complete!', 'success');
     } catch (err) {
         showToast(err.message, 'error');
+    } finally {
+        hideLoading();
+        setApiLoading(false);
     }
 }
 
@@ -312,10 +329,15 @@ function updatePrivilegedValues() {
 }
 
 // ── Loading ───────────────────────────────────────────────
-function showLoading() {
+function showLoading(message = DEFAULT_LOADING_MESSAGE) {
     configPanel.classList.add('hidden');
     resultsDashboard.classList.add('hidden');
     loadingOverlay.classList.remove('hidden');
+
+    const loadingTitle = $('#loading-title');
+    const loadingText = $('#loading-text');
+    if (loadingTitle) loadingTitle.textContent = message;
+    if (loadingText) loadingText.textContent = message;
 
     // Animate steps
     const steps = ['ls-1', 'ls-2', 'ls-3', 'ls-4'];
@@ -719,29 +741,83 @@ function renderRecommendations(data) {
 
 // ── Export Report ─────────────────────────────────────────
 function exportReport() {
+    showLoading(EXPORT_LOADING_MESSAGE);
+    setApiLoading(true);
+    try {
+        const data = window._lastAnalysisData;
+        if (!data) {
+            showToast('No analysis data to export', 'error');
+            return;
+        }
+
+        const report = {
+            report_title: 'FairAI Pro - Bias Detection Report',
+            generated_at: new Date().toISOString(),
+            ...data
+        };
+
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'fairai_report_' + Date.now() + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('Report exported successfully!', 'success');
+    } catch (err) {
+        showToast('Export failed. Please try again.', 'error');
+    } finally {
+        hideLoading();
+        setApiLoading(false);
+        if (window._lastAnalysisData) {
+            resultsDashboard.classList.remove('hidden');
+        }
+    }
+}
+
+async function runExplain() {
     const data = window._lastAnalysisData;
-    if (!data) {
-        showToast('No analysis data to export', 'error');
+    if (!data?.fairness || !data?.dataset || !data?.groups?.details?.length) {
+        showToast('Run analysis first to generate explanation.', 'error');
         return;
     }
 
-    const report = {
-        report_title: 'FairAI Pro — Bias Detection Report',
-        generated_at: new Date().toISOString(),
-        ...data
-    };
+    showLoading(EXPLAIN_LOADING_MESSAGE);
+    setApiLoading(true);
+    try {
+        const groupStats = {};
+        data.groups.details.forEach(g => {
+            groupStats[g.group] = g.selection_rate;
+        });
 
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `fairai_report_${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+        const res = await apiRequest('/explain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fairness_score: data.fairness.fairness_score,
+                sensitive_column: data.dataset.sensitive_column,
+                group_stats: groupStats
+            })
+        }, false, DEFAULT_LOADING_MESSAGE, false);
 
-    showToast('Report exported successfully!', 'success');
+        if (res?.explanation) {
+            data.explanation = res.explanation;
+            showToast('AI explanation generated.', 'success');
+        } else {
+            showToast('No explanation returned by API.', 'error');
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        hideLoading();
+        setApiLoading(false);
+        if (window._lastAnalysisData) {
+            resultsDashboard.classList.remove('hidden');
+        }
+    }
 }
 function resetToUpload() {
     configPanel.classList.add('hidden');
@@ -792,3 +868,4 @@ function showToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 4000);
 }
+
