@@ -2,11 +2,8 @@
    FairAI Pro — Frontend Application Logic
    ═══════════════════════════════════════════════════════════ */
 
-const BACKEND_BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://fairai-pro.onrender.com";
-const API_BASE = `${BACKEND_BASE_URL}/api`;
+const IS_LOCAL_DEV = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = IS_LOCAL_DEV ? "http://localhost:5000/api" : "/api";
 const API_TIMEOUT_MS = 25000;
 const DEFAULT_LOADING_MESSAGE = 'Processing fairness analysis... This may take a few seconds';
 const ANALYZE_LOADING_MESSAGE = 'Analyzing dataset...';
@@ -33,6 +30,7 @@ const btnChangeFile = $('#btn-change-file');
 const btnNewAnalysis = $('#btn-new-analysis');
 const btnExportReport = $('#btn-export-report');
 const btnExplain = $('#btn-explain');
+const btnMitigation = $('#btn-mitigation');
 const targetColSel = $('#target-col');
 const sensitiveColSel = $('#sensitive-col');
 const privilegedValSel = $('#privileged-val');
@@ -104,6 +102,7 @@ function initButtons() {
     // Export report
     if (btnExportReport) btnExportReport.addEventListener('click', exportReport);
     if (btnExplain) btnExplain.addEventListener('click', runExplain);
+    if (btnMitigation) btnMitigation.addEventListener('click', runMitigation);
 
     // Update privileged values when sensitive column changes
     sensitiveColSel.addEventListener('change', () => {
@@ -122,6 +121,7 @@ function setApiLoading(isLoading) {
     if (fileInput) fileInput.disabled = isBusy;
     if (btnExportReport) btnExportReport.disabled = isBusy;
     if (btnExplain) btnExplain.disabled = isBusy;
+    if (btnMitigation) btnMitigation.disabled = isBusy;
     if (btnChangeFile) btnChangeFile.disabled = isBusy;
     if (btnNewAnalysis) btnNewAnalysis.disabled = isBusy;
 }
@@ -222,31 +222,50 @@ async function runAnalysis() {
                 privileged_value: privilegedVal
             })
         }, false, DEFAULT_LOADING_MESSAGE, false);
-
-        let mitigation = null;
-        try {
-            showLoading(MITIGATION_LOADING_MESSAGE);
-            mitigation = await apiRequest('/mitigation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    target_column: targetCol,
-                    sensitive_column: sensitiveCol
-                })
-            }, false, DEFAULT_LOADING_MESSAGE, false);
-        } catch (e) {
-            // Keep main analysis usable even if mitigation call fails.
-        }
-
-        data.mitigation = mitigation;
-
+        data.mitigation = null;
         renderResults(data);
-        showToast('Analysis complete!', 'success');
+        showToast('Analysis complete! Run mitigation to compare fairness before and after.', 'success');
     } catch (err) {
         showToast(err.message, 'error');
     } finally {
         hideLoading();
         setApiLoading(false);
+    }
+}
+
+async function runMitigation() {
+    const targetCol = targetColSel.value;
+    const sensitiveCol = sensitiveColSel.value;
+
+    if (!targetCol || !sensitiveCol) {
+        showToast('Please select target and sensitive columns before mitigation.', 'error');
+        return;
+    }
+
+    showLoading(MITIGATION_LOADING_MESSAGE);
+    setApiLoading(true);
+    try {
+        const mitigation = await apiRequest('/mitigation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                target_column: targetCol,
+                sensitive_column: sensitiveCol
+            })
+        }, false, DEFAULT_LOADING_MESSAGE, false);
+
+        if (!window._lastAnalysisData) window._lastAnalysisData = {};
+        window._lastAnalysisData.mitigation = mitigation;
+        renderMitigationScores(mitigation);
+        showToast('Mitigation completed successfully.', 'success');
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        hideLoading();
+        setApiLoading(false);
+        if (window._lastAnalysisData) {
+            resultsDashboard.classList.remove('hidden');
+        }
     }
 }
 

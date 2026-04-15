@@ -27,7 +27,12 @@ ALLOWED_UPLOAD_EXTENSIONS = {"csv"}
 COLUMN_MAPPING = {
     "sex": "gender",
     "age_num": "age",
-    "target": "hired"
+    "experience": "experience_years",
+    "exp": "experience_years",
+    "salary": "income",
+    "earnings": "income",
+    "target": "hired",
+    "label": "hired"
 }
 REQUIRED_COLS = ["age", "gender", "education", "experience_years", "income", "hired"]
 
@@ -76,13 +81,35 @@ def _normalize_col_name(name):
     return str(name).strip().lower()
 
 
+def preprocess_dataframe(df):
+    df = df.copy()
+    column_mapping = {
+        "sex": "gender",
+        "age_num": "age",
+        "experience": "experience_years",
+        "exp": "experience_years",
+        "salary": "income",
+        "earnings": "income",
+        "target": "hired",
+        "label": "hired"
+    }
+
+    new_columns = []
+    for col in df.columns:
+        clean_col = col.strip().lower()
+        mapped_col = column_mapping.get(clean_col, clean_col)
+        new_columns.append(mapped_col)
+
+    df.columns = new_columns
+    print("FINAL COLUMNS:", df.columns.tolist())
+    return df
+
+
 def _normalize_and_validate_df(df, target_col=None, sensitive_col=None):
     df = df.copy()
-    df.columns = df.columns.str.strip().str.lower()
-    df.rename(columns=COLUMN_MAPPING, inplace=True)
-
-    if any(col not in df.columns for col in REQUIRED_COLS):
-        raise ValueError("Dataset must contain required columns: age, gender, education, experience_years, income, hired")
+    missing_columns = [col for col in REQUIRED_COLS if col not in df.columns]
+    if missing_columns:
+        raise ValueError(f"Missing columns after mapping: {missing_columns}")
 
     if df.isnull().any().any():
         raise ValueError("Dataset contains missing values. Please clean your data.")
@@ -195,6 +222,7 @@ def upload_dataset():
 
     try:
         df = pd.read_csv(filepath)
+        df = preprocess_dataframe(df)
         df, _, _ = _normalize_and_validate_df(df)
         df.to_csv(filepath, index=False)
         info = get_dataset_info(filepath)
@@ -227,6 +255,7 @@ def analyze():
 
     try:
         df = pd.read_csv(filepath)
+        df = preprocess_dataframe(df)
         df, normalized_target, normalized_sensitive = _normalize_and_validate_df(df, target_col, sensitive_col)
         results = analyze_bias(df, normalized_target, normalized_sensitive, privileged_value)
         results = {k: to_serializable(v) for k, v in results.items()}
@@ -258,6 +287,7 @@ def mitigation():
 
     try:
         df = pd.read_csv(filepath)
+        df = preprocess_dataframe(df)
         df, normalized_target, normalized_sensitive = _normalize_and_validate_df(df, target_col, sensitive_col)
         results = analyze_mitigation(df, normalized_target, normalized_sensitive)
         results = {k: to_serializable(v) for k, v in results.items()}
@@ -315,6 +345,7 @@ def use_sample():
 
     try:
         df = pd.read_csv(dest)
+        df = preprocess_dataframe(df)
         df, _, _ = _normalize_and_validate_df(df)
         df.to_csv(dest, index=False)
         info = get_dataset_info(dest)
