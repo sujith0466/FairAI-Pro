@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 const IS_LOCAL_DEV = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE = IS_LOCAL_DEV ? "http://localhost:5000/api" : "/api";
+const API_BASE = IS_LOCAL_DEV ? "http://localhost:5000/api" : "https://fairai-pro.onrender.com";
 const API_TIMEOUT_MS = 25000;
 const DEFAULT_LOADING_MESSAGE = 'Processing fairness analysis... This may take a few seconds';
 const ANALYZE_LOADING_MESSAGE = 'Analyzing dataset...';
