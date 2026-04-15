@@ -11,8 +11,8 @@ It helps teams detect bias, evaluate mitigation impact, and generate concise AI 
 
 ## Live Demo
 
-- Frontend (Vercel): `https://fair-ai-pro.vercel.app/`
-- Backend (Render): `https://fairai-pro.onrender.com/`
+- Frontend (Vercel): https://fair-ai-pro.vercel.app/
+- Backend (Render): https://fairai-pro.onrender.com/
 
 ## Key Features
 
