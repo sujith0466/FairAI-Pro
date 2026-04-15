@@ -20,6 +20,11 @@ env/
 # Runtime / local artifacts
 backend/uploads/*
 large_test_dataset.csv
+valid_dataset_1.csv
+valid_dataset_2.csv
+valid_dataset_3.csv
+edge_case_dataset.csv
+invalid_dataset.csv
 !backend/uploads/.gitkeep
 *.log
 

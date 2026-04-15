@@ -24,6 +24,12 @@ GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "20"))
 DEBUG_MODE = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 ALLOWED_UPLOAD_EXTENSIONS = {"csv"}
+COLUMN_MAPPING = {
+    "sex": "gender",
+    "age_num": "age",
+    "target": "hired"
+}
+REQUIRED_COLS = ["age", "gender", "education", "experience_years", "income", "hired"]
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
@@ -64,6 +70,46 @@ def add_cors_headers(response):
 
 def _is_allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_UPLOAD_EXTENSIONS
+
+
+def _normalize_col_name(name):
+    return str(name).strip().lower()
+
+
+def _normalize_and_validate_df(df, target_col=None, sensitive_col=None):
+    df = df.copy()
+    df.columns = df.columns.str.strip().str.lower()
+    df.rename(columns=COLUMN_MAPPING, inplace=True)
+
+    if any(col not in df.columns for col in REQUIRED_COLS):
+        raise ValueError("Dataset must contain required columns: age, gender, education, experience_years, income, hired")
+
+    if df.isnull().any().any():
+        raise ValueError("Dataset contains missing values. Please clean your data.")
+
+    normalized_target = _normalize_col_name(target_col) if target_col else None
+    normalized_sensitive = _normalize_col_name(sensitive_col) if sensitive_col else None
+
+    if normalized_target in COLUMN_MAPPING:
+        normalized_target = COLUMN_MAPPING[normalized_target]
+    if normalized_sensitive in COLUMN_MAPPING:
+        normalized_sensitive = COLUMN_MAPPING[normalized_sensitive]
+
+    if normalized_target and normalized_target not in df.columns:
+        raise ValueError(f"Target column '{target_col}' not found in dataset")
+    if normalized_sensitive and normalized_sensitive not in df.columns:
+        raise ValueError(f"Sensitive column '{sensitive_col}' not found in dataset")
+
+    if normalized_target:
+        df[normalized_target] = pd.to_numeric(df[normalized_target], errors="coerce")
+        if df[normalized_target].isnull().any():
+            raise ValueError("Target column must contain only 0 and 1 values")
+
+        values = set(df[normalized_target].unique())
+        if not values.issubset({0, 1}):
+            raise ValueError("Target column must contain only 0 and 1 values")
+
+    return df, normalized_target, normalized_sensitive
 
 
 def _build_explanation_prompt(fairness_score, sensitive_column, group_stats):
@@ -148,9 +194,14 @@ def upload_dataset():
     file.save(filepath)
 
     try:
+        df = pd.read_csv(filepath)
+        df, _, _ = _normalize_and_validate_df(df)
+        df.to_csv(filepath, index=False)
         info = get_dataset_info(filepath)
         info = to_serializable(info)
         return jsonify(info)
+    except ValueError as e:
+        return _json_error(str(e), 400)
     except Exception as e:
         return _json_error(str(e), 500)
 
@@ -176,9 +227,12 @@ def analyze():
 
     try:
         df = pd.read_csv(filepath)
-        results = analyze_bias(df, target_col, sensitive_col, privileged_value)
+        df, normalized_target, normalized_sensitive = _normalize_and_validate_df(df, target_col, sensitive_col)
+        results = analyze_bias(df, normalized_target, normalized_sensitive, privileged_value)
         results = {k: to_serializable(v) for k, v in results.items()}
         return jsonify(results)
+    except ValueError as e:
+        return _json_error(str(e), 400)
     except Exception as e:
         traceback.print_exc()
         return _json_error(str(e), 500)
@@ -204,9 +258,12 @@ def mitigation():
 
     try:
         df = pd.read_csv(filepath)
-        results = analyze_mitigation(df, target_col, sensitive_col)
+        df, normalized_target, normalized_sensitive = _normalize_and_validate_df(df, target_col, sensitive_col)
+        results = analyze_mitigation(df, normalized_target, normalized_sensitive)
         results = {k: to_serializable(v) for k, v in results.items()}
         return jsonify(results)
+    except ValueError as e:
+        return _json_error(str(e), 400)
     except Exception as e:
         traceback.print_exc()
         return _json_error(str(e), 500)
@@ -257,9 +314,14 @@ def use_sample():
     shutil.copy2(sample_path, dest)
 
     try:
+        df = pd.read_csv(dest)
+        df, _, _ = _normalize_and_validate_df(df)
+        df.to_csv(dest, index=False)
         info = get_dataset_info(dest)
         info = to_serializable(info)
         return jsonify(info)
+    except ValueError as e:
+        return _json_error(str(e), 400)
     except Exception as e:
         return _json_error(str(e), 500)
 
