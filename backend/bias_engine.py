@@ -189,7 +189,7 @@ def analyze_bias(df, target_col, sensitive_col, privileged_value):
         g_acc = (g_preds == g_actual).mean() if g_total > 0 else 0
         group_details.append({
             "group": str(group_val),
-            "is_privileged": group_val == privileged_value,
+            "is_privileged": bool(group_val == privileged_value),
             "total": g_total,
             "positive_predictions": g_positive,
             "negative_predictions": g_total - g_positive,
@@ -310,7 +310,7 @@ def analyze_mitigation(df, target_col, sensitive_col):
     X_full = work_df.drop(columns=[target_col])
     sensitive_values = work_df[sensitive_col].copy()
 
-    X_train_full, X_test_full, y_train, _, sensitive_test = train_test_split(
+    X_train_full, X_test_full, y_train, y_test, sensitive_train, sensitive_test = train_test_split(
         X_full,
         y,
         sensitive_values,
@@ -352,7 +352,7 @@ def analyze_mitigation(df, target_col, sensitive_col):
     improvement = round(fairness_score_after - fairness_score_before, 2)
 
     return {
-        "before_score": fairness_score_before,
-        "after_score": fairness_score_after,
-        "improvement": improvement
+        "before_score": float(fairness_score_before),
+        "after_score": float(fairness_score_after),
+        "improvement": float(improvement)
     }

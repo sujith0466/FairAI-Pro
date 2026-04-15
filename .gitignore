@@ -27,3 +27,9 @@ backend/uploads/*
 Thumbs.db
 .vscode/
 .idea/
+
+# Required patterns
+.env
+**pycache**/
+*.pyc
+backend/uploads/*

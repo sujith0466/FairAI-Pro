@@ -2,7 +2,7 @@
    FairAI Pro — Frontend Application Logic
    ═══════════════════════════════════════════════════════════ */
 
-const BACKEND_BASE_URL = 'https://YOUR_RENDER_BACKEND_URL';
+const BACKEND_BASE_URL = 'https://fairai-pro.onrender.com'||'http://localhost:5000';
 const API_BASE = `${BACKEND_BASE_URL}/api`;
 const API_TIMEOUT_MS = 25000;
 

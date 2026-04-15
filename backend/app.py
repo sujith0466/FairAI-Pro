@@ -9,10 +9,10 @@ import traceback
 import urllib.request
 import urllib.error
 from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
 from dotenv import load_dotenv
 from bias_engine import analyze_bias, analyze_mitigation, get_dataset_info
 import pandas as pd
+import numpy as np
 
 load_dotenv()
 
@@ -26,7 +26,6 @@ MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 ALLOWED_UPLOAD_EXTENSIONS = {"csv"}
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
-CORS(app)
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
 
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(BASE_DIR, 'uploads'))
@@ -35,6 +34,32 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def _json_error(message, status_code):
     return jsonify({"error": message}), status_code
+
+
+def to_serializable(obj):
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.floating,)):
+        return float(obj)
+    if isinstance(obj, (np.bool_,)):
+        return bool(obj)
+    if isinstance(obj, dict):
+        return {str(k): to_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [to_serializable(v) for v in obj]
+    if isinstance(obj, np.ndarray):
+        return [to_serializable(v) for v in obj.tolist()]
+    if pd.isna(obj):
+        return None
+    return obj
+
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
 
 
 def _is_allowed_file(filename):
@@ -124,6 +149,7 @@ def upload_dataset():
 
     try:
         info = get_dataset_info(filepath)
+        info = to_serializable(info)
         return jsonify(info)
     except Exception as e:
         return _json_error(str(e), 500)
@@ -151,6 +177,7 @@ def analyze():
     try:
         df = pd.read_csv(filepath)
         results = analyze_bias(df, target_col, sensitive_col, privileged_value)
+        results = {k: to_serializable(v) for k, v in results.items()}
         return jsonify(results)
     except Exception as e:
         traceback.print_exc()
@@ -178,6 +205,7 @@ def mitigation():
     try:
         df = pd.read_csv(filepath)
         results = analyze_mitigation(df, target_col, sensitive_col)
+        results = {k: to_serializable(v) for k, v in results.items()}
         return jsonify(results)
     except Exception as e:
         traceback.print_exc()
@@ -230,6 +258,7 @@ def use_sample():
 
     try:
         info = get_dataset_info(dest)
+        info = to_serializable(info)
         return jsonify(info)
     except Exception as e:
         return _json_error(str(e), 500)
@@ -237,4 +266,4 @@ def use_sample():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", debug=DEBUG_MODE, port=port)
+    app.run(host="0.0.0.0", port=port, debug=DEBUG_MODE)
