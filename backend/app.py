@@ -20,8 +20,8 @@ load_dotenv()
 BASE_DIR = os.path.dirname(__file__)
 FRONTEND_DIR = os.path.join(BASE_DIR, '..', 'frontend')
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "20"))
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "60"))
 DEBUG_MODE = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 ALLOWED_UPLOAD_EXTENSIONS = {"csv"}
@@ -140,12 +140,12 @@ def _normalize_and_validate_df(df, target_col=None, sensitive_col=None):
 def _build_explanation_prompt(fairness_score, sensitive_column, group_stats):
     group_lines = "\n".join([f"- {group}: {rate}" for group, rate in group_stats.items()])
     return (
-        "Explain in simple terms why this machine learning model shows bias based on the fairness score "
-        "and group statistics. Also suggest how to reduce the bias.\n\n"
+        "Explain why this machine learning model shows bias based on the fairness score "
+        "and group statistics. Suggest specific mitigation steps.\n\n"
         f"Fairness score: {fairness_score}\n"
         f"Sensitive column: {sensitive_column}\n"
         f"Group statistics (selection rates):\n{group_lines}\n\n"
-        "Keep the response concise in 3 to 5 lines."
+        "Output exactly 3 to 5 concise bullet points. Start each point with a dash (-)."
     )
 
 

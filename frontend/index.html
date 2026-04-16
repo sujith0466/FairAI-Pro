@@ -457,6 +457,24 @@
                     </div>
                 </div>
 
+                <!-- AI Explanation -->
+                <div class="explanation-card hidden" id="explanation-card">
+                    <h3 class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        AI Fairness Explanation
+                    </h3>
+                    <p class="card-subtitle">AI-generated insights into the detected bias and recommended improvements</p>
+                    <div class="explanation-content" id="explanation-content">
+                        <!-- Populated by JS -->
+                        <div class="explanation-loading">
+                            <div class="mini-spinner"></div>
+                            <span>Analysing bias patterns...</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
                 <div class="results-footer">
                     <button class="btn btn-secondary" id="btn-mitigation">

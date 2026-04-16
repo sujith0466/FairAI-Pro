@@ -810,7 +810,18 @@ async function runExplain() {
         return;
     }
 
-    showLoading(EXPLAIN_LOADING_MESSAGE);
+    const card = $('#explanation-card');
+    const content = $('#explanation-content');
+    
+    card.classList.remove('hidden');
+    content.innerHTML = `
+        <div class="explanation-loading">
+            <div class="mini-spinner"></div>
+            <span>Analysing bias patterns with AI...</span>
+        </div>
+    `;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
     setApiLoading(true);
     try {
         const groupStats = {};
@@ -830,24 +841,55 @@ async function runExplain() {
 
         if (res?.explanation) {
             data.explanation = res.explanation;
+            renderExplanation(res.explanation);
             showToast('AI explanation generated.', 'success');
         } else {
-            showToast('No explanation returned by API.', 'error');
+            throw new Error('No explanation returned by API.');
         }
     } catch (err) {
+        content.innerHTML = `
+            <div class="explanation-error">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:8px">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <div style="font-weight:600">Failed to generate explanation</div>
+                <div style="font-size:0.85rem;opacity:0.8">${err.message}</div>
+                <button class="btn btn-ghost" style="margin-top:12px;padding:6px 16px;font-size:0.75rem" onclick="runExplain()">Retry</button>
+            </div>
+        `;
         showToast(err.message, 'error');
     } finally {
-        hideLoading();
         setApiLoading(false);
-        if (window._lastAnalysisData) {
-            resultsDashboard.classList.remove('hidden');
-        }
     }
+}
+
+function renderExplanation(text) {
+    const content = $('#explanation-content');
+    if (!text) return;
+
+    // Split into bullet points (at least 3, max 5)
+    // Common delimiters: newlines, numbered lists, or just long sentences
+    let points = text.split(/\n|(?:\d\.\s)/).filter(p => p.trim().length > 5);
+    
+    // If splitting by newlines didn't work well, split by sentences
+    if (points.length < 2) {
+        points = text.split(/[.!?](?=\s|$)/).filter(p => p.trim().length > 5);
+    }
+
+    // Limit to 5 points
+    points = points.slice(0, 5);
+
+    content.innerHTML = `
+        <ul class="explanation-list">
+            ${points.map(p => `<li>${p.trim()}</li>`).join('')}
+        </ul>
+    `;
 }
 function resetToUpload() {
     configPanel.classList.add('hidden');
     resultsDashboard.classList.add('hidden');
     loadingOverlay.classList.add('hidden');
+    $('#explanation-card').classList.add('hidden');
     uploadPanel.classList.remove('hidden');
     fileInput.value = '';
     datasetInfo = null;
