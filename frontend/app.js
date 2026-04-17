@@ -6,7 +6,7 @@ const BACKEND_BASE_URL =
 (window.location.hostname === "localhost" ||
 window.location.hostname === "127.0.0.1" ||
 window.location.hostname === "")
-? "http://localhost:5000"
+? ""
 : "https://fairai-pro.onrender.com";
 
 const API_BASE = BACKEND_BASE_URL + "/api";
@@ -867,17 +867,13 @@ function renderExplanation(text) {
     const content = $('#explanation-content');
     if (!text) return;
 
-    // Split into bullet points (at least 3, max 5)
-    // Common delimiters: newlines, numbered lists, or just long sentences
-    let points = text.split(/\n|(?:\d\.\s)/).filter(p => p.trim().length > 5);
-    
-    // If splitting by newlines didn't work well, split by sentences
-    if (points.length < 2) {
-        points = text.split(/[.!?](?=\s|$)/).filter(p => p.trim().length > 5);
-    }
+    // Backend returns newline-separated clean lines (dashes already stripped)
+    const points = text.split('\n').filter(l => l.trim().length > 0);
 
-    // Limit to 5 points
-    points = points.slice(0, 5);
+    if (points.length === 0) {
+        content.innerHTML = '<p style="color:var(--text-tertiary)">No explanation content received.</p>';
+        return;
+    }
 
     content.innerHTML = `
         <ul class="explanation-list">

@@ -40,6 +40,8 @@ REQUIRED_COLS = ["age", "gender", "education", "experience_years", "income", "hi
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS(app, origins=[
     "http://localhost:3000",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
     "http://localhost:5173",
     "https://fair-ai-pro.vercel.app"
 ])
@@ -153,41 +155,70 @@ def _generate_gemini_explanation(prompt_text):
     if not GEMINI_API_KEY:
         raise ValueError("Gemini API key is not configured. Set GEMINI_API_KEY in your environment.")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-    payload = {
-        "contents": [{"parts": [{"text": prompt_text}]}],
-        "generationConfig": {
-            "temperature": 0.4,
-            "maxOutputTokens": 220
+    # Try primary model first, then fallback on transient errors
+    models_to_try = [GEMINI_MODEL]
+    fallback = "gemini-2.5-flash-lite"
+    if fallback != GEMINI_MODEL:
+        models_to_try.append(fallback)
+
+    last_error = None
+    for model in models_to_try:
+        print(f"EXPLAIN: Trying model '{model}'...")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
+        payload = {
+            "contents": [{"parts": [{"text": prompt_text}]}],
+            "generationConfig": {
+                "temperature": 0.4,
+                "maxOutputTokens": 800
+            }
         }
-    }
-    body = json.dumps(payload).encode("utf-8")
+        body = json.dumps(payload).encode("utf-8")
 
-    req = urllib.request.Request(
-        url,
-        data=body,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
+        req = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
 
-    try:
-        with urllib.request.urlopen(req, timeout=GEMINI_TIMEOUT_SECONDS) as response:
-            response_data = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        error_details = e.read().decode("utf-8", errors="ignore")
-        raise RuntimeError(f"Gemini API request failed ({e.code}): {error_details}")
-    except Exception as e:
-        raise RuntimeError(f"Gemini API request failed: {str(e)}")
+        try:
+            with urllib.request.urlopen(req, timeout=GEMINI_TIMEOUT_SECONDS) as response:
+                response_data = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            error_details = e.read().decode("utf-8", errors="ignore")
+            last_error = RuntimeError(f"Gemini API request failed ({e.code}): {error_details}")
+            # Retry on 429 (rate limit) or 503 (overloaded)
+            if e.code in (429, 503):
+                print(f"EXPLAIN: Model '{model}' returned {e.code}, trying next...")
+                continue
+            raise last_error
+        except Exception as e:
+            last_error = RuntimeError(f"Gemini API request failed: {str(e)}")
+            print(f"EXPLAIN: Model '{model}' failed: {e}, trying next...")
+            continue
 
-    try:
-        text = response_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except (KeyError, IndexError, TypeError):
-        raise RuntimeError("Gemini API returned an unexpected response format.")
+        try:
+            text = response_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except (KeyError, IndexError, TypeError):
+            raise RuntimeError("Gemini API returned an unexpected response format.")
 
-    # Enforce concise 3-5 lines max in backend output as a safety guard.
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    concise_text = "\n".join(lines[:5]) if lines else "No explanation generated."
-    return concise_text
+        # Log raw response for debugging
+        print("RAW GEMINI RESPONSE:", repr(text))
+
+        finish_reason = response_data.get("candidates", [{}])[0].get("finishReason", "")
+        if finish_reason == "MAX_TOKENS":
+            print("WARNING: Gemini response was truncated (MAX_TOKENS).")
+
+        # Clean up lines: strip leading dashes/bullets and whitespace, keep all non-empty lines
+        lines = [line.strip().lstrip("-\u2022*").strip() for line in text.splitlines() if line.strip()]
+        if not lines:
+            raise RuntimeError("Gemini returned an empty explanation.")
+
+        print(f"EXPLAIN: Success with model '{model}', {len(lines)} bullet(s)")
+        return "\n".join(lines)
+
+    # All models failed
+    raise last_error or RuntimeError("All Gemini models failed.")
 
 
 @app.route('/')
