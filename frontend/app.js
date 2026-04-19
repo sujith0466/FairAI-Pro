@@ -27,6 +27,7 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const uploadPanel = $('#upload-panel');
 const configPanel = $('#config-panel');
 const loadingOverlay = $('#loading-overlay');
+const resultsSection = $('#results-section');
 const resultsDashboard = $('#results-dashboard');
 const uploadZone = $('#upload-zone');
 const fileInput = $('#file-input');
@@ -48,6 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavbar();
     initUpload();
     initButtons();
+    if (resultsSection) resultsSection.classList.add('hidden');
+    if (resultsDashboard) resultsDashboard.classList.add('hidden');
+    const mitigationCard = document.getElementById('mitigation-scores-card');
+    if (mitigationCard) mitigationCard.classList.add('hidden');
+    if (btnMitigation) btnMitigation.disabled = true;
 });
 
 // ── Navbar ────────────────────────────────────────────────
@@ -110,6 +116,7 @@ function initButtons() {
     if (btnExportReport) btnExportReport.addEventListener('click', exportReport);
     if (btnExplain) btnExplain.addEventListener('click', runExplain);
     if (btnMitigation) btnMitigation.addEventListener('click', runMitigation);
+    if (btnMitigation) btnMitigation.disabled = true;
 
     // Update privileged values when sensitive column changes
     sensitiveColSel.addEventListener('change', () => {
@@ -231,6 +238,10 @@ async function runAnalysis() {
         }, false, DEFAULT_LOADING_MESSAGE, false);
         data.mitigation = null;
         renderResults(data);
+        window._lastAnalysisData = data;
+        if (btnMitigation && data) {
+            btnMitigation.disabled = false;
+        }
         if (data.warning) {
             showToast(data.warning, 'warning');
         }
@@ -241,8 +252,7 @@ async function runAnalysis() {
     } catch (err) {
         showToast(err.message, 'error');
     } finally {
-        hideLoading();
-        setApiLoading(false);
+        finishLoadingAndShowResults();
     }
 }
 
@@ -274,11 +284,7 @@ async function runMitigation() {
     } catch (err) {
         showToast(err.message, 'error');
     } finally {
-        hideLoading();
-        setApiLoading(false);
-        if (window._lastAnalysisData) {
-            resultsDashboard.classList.remove('hidden');
-        }
+        finishLoadingAndShowResults();
     }
 }
 
@@ -363,7 +369,8 @@ function updatePrivilegedValues() {
 // ── Loading ───────────────────────────────────────────────
 function showLoading(message = DEFAULT_LOADING_MESSAGE) {
     configPanel.classList.add('hidden');
-    resultsDashboard.classList.add('hidden');
+    if (resultsSection) resultsSection.classList.add('hidden');
+    if (resultsDashboard) resultsDashboard.classList.add('hidden');
     loadingOverlay.classList.remove('hidden');
 
     const loadingTitle = $('#loading-title');
@@ -398,14 +405,19 @@ function hideLoading() {
     loadingOverlay.classList.add('hidden');
 }
 
+function showResultsIfAvailable() {
+    if (window._lastAnalysisData && resultsSection) {
+        resultsSection.classList.remove('hidden');
+        if (resultsDashboard) resultsDashboard.classList.remove('hidden');
+    }
+}
+
 // ── Render Results ────────────────────────────────────────
 function renderResults(data) {
     if (!data || !data.fairness || !data.model || !data.groups || !data.dataset) {
         showToast('Incomplete analysis response received from backend.', 'error');
         return;
     }
-
-    resultsDashboard.classList.remove('hidden');
 
     const { fairness, model, groups, dataset } = data;
 
@@ -606,9 +618,6 @@ function renderResults(data) {
     renderRecommendations(data);
     renderMitigationScores(data.mitigation);
 
-    // Store data for export
-    window._lastAnalysisData = data;
-
     // Scroll to results
     resultsDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -806,11 +815,7 @@ function exportReport() {
     } catch (err) {
         showToast('Export failed. Please try again.', 'error');
     } finally {
-        hideLoading();
-        setApiLoading(false);
-        if (window._lastAnalysisData) {
-            resultsDashboard.classList.remove('hidden');
-        }
+        finishLoadingAndShowResults();
     }
 }
 
@@ -894,14 +899,24 @@ function renderExplanation(text) {
 }
 function resetToUpload() {
     configPanel.classList.add('hidden');
-    resultsDashboard.classList.add('hidden');
+    if (resultsSection) resultsSection.classList.add('hidden');
+    if (resultsDashboard) resultsDashboard.classList.add('hidden');
     loadingOverlay.classList.add('hidden');
     $('#explanation-card').classList.add('hidden');
+    const mitigationCard = document.getElementById('mitigation-scores-card');
+    if (mitigationCard) mitigationCard.classList.add('hidden');
+    if (btnMitigation) btnMitigation.disabled = true;
     uploadPanel.classList.remove('hidden');
     fileInput.value = '';
     datasetInfo = null;
 
     uploadPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function finishLoadingAndShowResults() {
+    hideLoading();
+    setApiLoading(false);
+    showResultsIfAvailable();
 }
 
 // ── Animate Counter ───────────────────────────────────────
