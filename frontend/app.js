@@ -38,6 +38,7 @@ const btnNewAnalysis = $('#btn-new-analysis');
 const btnExportReport = $('#btn-export-report');
 const btnExplain = $('#btn-explain');
 const btnMitigation = $('#btn-mitigation');
+const mitigationHint = $('#mitigation-hint');
 const targetColSel = $('#target-col');
 const sensitiveColSel = $('#sensitive-col');
 const privilegedValSel = $('#privileged-val');
@@ -239,6 +240,9 @@ async function runAnalysis() {
         data.mitigation = null;
         renderResults(data);
         window._lastAnalysisData = data;
+        const mitigationCard = document.getElementById('mitigation-scores-card');
+        if (mitigationCard) mitigationCard.classList.add('hidden');
+        if (mitigationHint) mitigationHint.classList.remove('hidden');
         if (btnMitigation && data) {
             btnMitigation.disabled = false;
         }
@@ -279,6 +283,9 @@ async function runMitigation() {
 
         if (!window._lastAnalysisData) window._lastAnalysisData = {};
         window._lastAnalysisData.mitigation = mitigation;
+        const mitigationCard = document.getElementById('mitigation-scores-card');
+        if (mitigationCard) mitigationCard.classList.remove('hidden');
+        if (mitigationHint) mitigationHint.classList.add('hidden');
         renderMitigationScores(mitigation);
         showToast('Mitigation completed successfully.', 'success');
     } catch (err) {
@@ -616,7 +623,14 @@ function renderResults(data) {
 
     // ── Recommendations ──
     renderRecommendations(data);
-    renderMitigationScores(data.mitigation);
+    if (data.mitigation) {
+        renderMitigationScores(data.mitigation);
+        if (mitigationHint) mitigationHint.classList.add('hidden');
+    } else {
+        const mitigationCard = $('#mitigation-scores-card');
+        if (mitigationCard) mitigationCard.classList.add('hidden');
+        if (mitigationHint) mitigationHint.classList.remove('hidden');
+    }
 
     // Scroll to results
     resultsDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -905,6 +919,7 @@ function resetToUpload() {
     $('#explanation-card').classList.add('hidden');
     const mitigationCard = document.getElementById('mitigation-scores-card');
     if (mitigationCard) mitigationCard.classList.add('hidden');
+    if (mitigationHint) mitigationHint.classList.remove('hidden');
     if (btnMitigation) btnMitigation.disabled = true;
     uploadPanel.classList.remove('hidden');
     fileInput.value = '';
