@@ -20,6 +20,9 @@ env/
 
 # Runtime / local artifacts
 backend/uploads/*
+/test_data/
+/Slide7/
+/Slide11/
 large_test_dataset.csv
 valid_dataset_1.csv
 valid_dataset_2.csv
@@ -40,3 +43,4 @@ Thumbs.db
 **pycache**/
 *.pyc
 backend/uploads/*
+qa_test.py

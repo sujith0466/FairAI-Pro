@@ -40,6 +40,7 @@ const btnMitigation = $('#btn-mitigation');
 const targetColSel = $('#target-col');
 const sensitiveColSel = $('#sensitive-col');
 const privilegedValSel = $('#privileged-val');
+const defaultDirMetricDesc = $('#mc-dir .metric-desc')?.textContent || '';
 let apiInFlightCount = 0;
 
 // ── Init ──────────────────────────────────────────────────
@@ -230,6 +231,12 @@ async function runAnalysis() {
         }, false, DEFAULT_LOADING_MESSAGE, false);
         data.mitigation = null;
         renderResults(data);
+        if (data.warning) {
+            showToast(data.warning, 'warning');
+        }
+        if (data.info) {
+            showToast(data.info, 'info');
+        }
         showToast('Analysis complete! Run mitigation to compare fairness before and after.', 'success');
     } catch (err) {
         showToast(err.message, 'error');
@@ -467,7 +474,7 @@ function renderResults(data) {
         red: 'Significant bias detected — mitigation required'
     };
     $('#score-headline').textContent = headlines[c];
-    $('#score-direction').textContent = fairness.bias_direction;
+    $('#score-direction').textContent = data.score_explanation || fairness.bias_direction;
 
     // ── Metrics ──
     const spdVal = fairness.statistical_parity_difference;
@@ -492,6 +499,10 @@ function renderResults(data) {
     // SPD/DIR tag styling
     $('#spd-tag').className = 'metric-tag' + (Math.abs(spdVal) <= 0.10 ? '' : ' tag-out-range');
     $('#dir-tag').className = 'metric-tag' + (dirVal >= 0.80 && dirVal <= 1.25 ? '' : ' tag-out-range');
+    const metricDirDesc = $('#mc-dir .metric-desc');
+    if (metricDirDesc) {
+        metricDirDesc.textContent = data.metric_explanation || defaultDirMetricDesc;
+    }
 
     // ── Selection Rate Comparison ──
     const compBars = $('#comparison-bars');

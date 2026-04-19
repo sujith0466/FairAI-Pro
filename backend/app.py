@@ -290,11 +290,37 @@ def analyze():
         df = preprocess_dataframe(df)
         df, normalized_target, normalized_sensitive = _normalize_and_validate_df(df, target_col, sensitive_col)
         
-        if len(df) > 3000:
+        original_size = len(df)
+        warning_msg = None
+        if original_size < 50:
+            warning_msg = "⚠ Results may not be statistically reliable due to small dataset size."
+        downsample_msg = None
+        
+        if original_size > 3000:
             df = df.sample(n=3000, random_state=42)
+            downsample_msg = f"ℹ Dataset contained {original_size} rows. Sampled 3000 rows for faster analysis."
             
         results = analyze_bias(df, normalized_target, normalized_sensitive, privileged_value)
+        fairness = results.get("fairness", {})
+        fairness_score = float(fairness.get("fairness_score", 0))
+        if fairness_score >= 80:
+            results["score_explanation"] = "The model appears fair with minimal bias detected."
+        elif fairness_score >= 50:
+            results["score_explanation"] = "Moderate bias detected. Mitigation is recommended."
+        else:
+            results["score_explanation"] = "Significant bias detected. Immediate action is required."
+        spd = fairness.get("statistical_parity_difference")
+        dir_val = fairness.get("disparate_impact_ratio")
+        try:
+            spd = float(spd)
+            dir_val = float(dir_val)
+        except:
+            spd = 0.0
+            dir_val = 0.0
+        results["metric_explanation"] = f"SPD: {spd:.2f}, DIR: {dir_val:.2f} indicate the level of bias between groups."
         results = {k: to_serializable(v) for k, v in results.items()}
+        results["warning"] = warning_msg
+        results["info"] = downsample_msg
         
         print("PROCESS TIME:", time.time() - start)
         return jsonify(results)
