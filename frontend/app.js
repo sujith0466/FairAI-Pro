@@ -57,6 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnMitigation) btnMitigation.disabled = true;
 });
 
+// Warm-up Render backend on page load to prevent cold starts
+window.addEventListener('load', async () => {
+    try {
+        await fetch('https://fairai-pro.onrender.com/api/health');
+        console.log('Backend warmed up');
+    } catch (e) {
+        console.log('Warm-up failed');
+    }
+});
+
 // ── Navbar ────────────────────────────────────────────────
 function initNavbar() {
     const navbar = $('#navbar');
